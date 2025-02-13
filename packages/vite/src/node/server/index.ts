@@ -419,6 +419,7 @@ export interface ResolvedServerUrls {
   network: string[]
 }
 
+// 依赖_createServer
 export function createServer(
   inlineConfig: InlineConfig = {},
 ): Promise<ViteDevServer> {
@@ -432,12 +433,15 @@ export async function _createServer(
     previousEnvironments?: Record<string, DevEnvironment>
   },
 ): Promise<ViteDevServer> {
+  // 应该是对config做一些处理
   const config = await resolveConfig(inlineConfig, 'serve')
 
   const initPublicFilesPromise = initPublicFiles(config)
 
   const { root, server: serverConfig } = config
+  // https的证书之类的
   const httpsOptions = await resolveHttpsConfig(config.server.https)
+  // 以中间件形式启动vite服务(可能后面要这么搞)
   const { middlewareMode } = serverConfig
 
   const resolvedOutDirs = getResolvedOutDirs(
@@ -445,11 +449,13 @@ export async function _createServer(
     config.build.outDir,
     config.build.rollupOptions?.output,
   )
+
   const emptyOutDir = resolveEmptyOutDir(
     config.build.emptyOutDir,
     config.root,
     resolvedOutDirs,
   )
+
   const resolvedWatchOptions = resolveChokidarOptions(
     {
       disableGlobbing: true,
@@ -459,12 +465,15 @@ export async function _createServer(
     emptyOutDir,
     config.cacheDir,
   )
-
+  // express就是基于connect开发的
   const middlewares = connect() as Connect.Server
+
+  // 获取httpServer
   const httpServer = middlewareMode
     ? null
     : await resolveHttpServer(serverConfig, middlewares, httpsOptions)
 
+  // 获取websocket
   const ws = createWebSocketServer(httpServer, config, httpsOptions)
 
   const publicFiles = await initPublicFilesPromise
@@ -474,8 +483,10 @@ export async function _createServer(
     setClientErrorHandler(httpServer, config.logger)
   }
 
+  // 是否监听模式
   // eslint-disable-next-line eqeqeq
   const watchEnabled = serverConfig.watch !== null
+  // 基于chokidar监听文件
   const watcher = watchEnabled
     ? (chokidar.watch(
         // config file dependencies and env file might be outside of root

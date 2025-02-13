@@ -12,6 +12,7 @@ if (!import.meta.url.includes('node_modules')) {
 global.__vite_start_time = performance.now()
 
 // check debug mode first before requiring the CLI.
+// 找到第一个符合的元素的索引
 const debugIndex = process.argv.findIndex((arg) => /^(?:-d|--debug)$/.test(arg))
 const filterIndex = process.argv.findIndex((arg) =>
   /^(?:-f|--filter)$/.test(arg),
@@ -29,6 +30,8 @@ if (debugIndex > 0) {
       .map((v) => `vite:${v}`)
       .join(',')
   }
+
+  // 写一些信息到process.env
   process.env.DEBUG = `${
     process.env.DEBUG ? process.env.DEBUG + ',' : ''
   }${value}`
@@ -50,6 +53,7 @@ function start() {
 }
 
 if (profileIndex > 0) {
+  // node-inspector调试 后面学习下
   process.argv.splice(profileIndex, 1)
   const next = process.argv[profileIndex]
   if (next && !next.startsWith('-')) {
@@ -62,5 +66,6 @@ if (profileIndex > 0) {
     session.post('Profiler.start', start)
   })
 } else {
+  // 正式开始
   start()
 }

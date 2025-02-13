@@ -12,6 +12,7 @@ import { createLogger } from './logger'
 import { resolveConfig } from './config'
 import type { InlineConfig } from './config'
 
+// 命令行工具
 const cli = cac('vite')
 
 // global options
@@ -144,6 +145,15 @@ const convertBase = (v: any) => {
   return v
 }
 
+/**
+ * vite config
+ * vite dev
+ * vite build
+ * vite optimize
+ * vite preview
+ */
+
+// 配置文件
 cli
   .option('-c, --config <file>', `[string] use specified config file`)
   .option('--base <path>', `[string] public base path (default: /)`, {
@@ -155,6 +165,7 @@ cli
   .option('-f, --filter <filter>', `[string] filter debug logs`)
   .option('-m, --mode <mode>', `[string] set env mode`)
 
+// 启动开发环境 这里是核心功能
 // dev
 cli
   .command('[root]', 'start dev server') // default command
@@ -170,11 +181,13 @@ cli
     `[boolean] force the optimizer to ignore the cache and re-bundle`,
   )
   .action(async (root: string, options: ServerOptions & GlobalCLIOptions) => {
+    // 1. 处理重复的配置
     filterDuplicateOptions(options)
     // output structure is preserved even after bundling so require()
     // is ok here
     const { createServer } = await import('./server')
     try {
+      // 2. 创建服务
       const server = await createServer({
         root,
         base: options.base,
@@ -252,6 +265,7 @@ cli
     }
   })
 
+// 打包构建
 // build
 cli
   .command('build [root]', 'build for production')
@@ -323,6 +337,7 @@ cli
     },
   )
 
+// 优化依赖项
 // optimize
 cli
   .command('optimize [root]', 'pre-bundle dependencies')
@@ -356,6 +371,7 @@ cli
     },
   )
 
+// 预览服务启动
 // preview
 cli
   .command('preview [root]', 'locally preview production build')
