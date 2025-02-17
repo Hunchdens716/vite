@@ -1307,6 +1307,11 @@ export function transformStableResult(
   }
 }
 
+/**
+ * 扁平化数组
+ * @param arr
+ * @returns
+ */
 export async function asyncFlatten<T>(arr: T[]): Promise<T[]> {
   do {
     arr = (await Promise.all(arr)).flat(Infinity) as any

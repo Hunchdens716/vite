@@ -965,7 +965,7 @@ export async function resolveConfig(
 ): Promise<ResolvedConfig> {
   let config = inlineConfig
   let configFileDependencies: string[] = []
-  let mode = inlineConfig.mode || defaultMode
+  let mode = inlineConfig.mode || defaultMode // 模式
   const isNodeEnvSet = !!process.env.NODE_ENV
   const packageCache: PackageCache = new Map()
 
@@ -982,7 +982,7 @@ export async function resolveConfig(
     isPreview,
   }
 
-  let { configFile } = config
+  let { configFile } = config // 配置文件位置
   if (configFile !== false) {
     const loadResult = await loadConfigFromFile(
       configEnv,
@@ -1025,11 +1025,13 @@ export async function resolveConfig(
 
   // run config hooks
   const userPlugins = [...prePlugins, ...normalPlugins, ...postPlugins]
+  // 执行config hook
   config = await runConfigHook(config, userPlugins, configEnv)
 
   // Ensure default client and ssr environments
   // If there are present, ensure order { client, ssr, ...custom }
   config.environments ??= {}
+  // 先不看ssr
   if (
     !config.environments.ssr &&
     (!isBuild || config.ssr || config.build?.ssr)
@@ -1047,6 +1049,7 @@ export async function resolveConfig(
   }
 
   // Define logger
+  // 日志处理
   const logger = createLogger(config.logLevel, {
     allowClearScreen: config.clearScreen,
     customLogger: config.customLogger,
